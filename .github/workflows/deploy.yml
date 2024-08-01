@@ -1,0 +1,45 @@
+name: Trigger auto deployment
+
+# When this action will be executed
+on:
+  # Uncomment the code below for automatically trigger the workflow when detected changes in the main branch
+  # push:
+  #   branches: [main]
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18.x"
+
+      - name: Set up Postgresql with prisma
+        run: |
+          DATABASE_URL=${{secrets.DATABASE_URL}} npx prisma generate
+          DATABASE_URL=${{secrets.DATABASE_URL}} npx prisma migrate deploy
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.CONTAINER_APP_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }}
+          registryUrl: <name-of-your-azure-container-registry>.azurecr.io
+          registryUsername: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
+          containerAppName: containerAppName
+          resourceGroup: healthCare
+          imageToBuild: <name-of-your-azure-container-registry>.azurecr.io/<container-app-name>:${{ github.sha }}
+          dockerfilePath: Dockerfile
