@@ -39,7 +39,7 @@ jobs:
           registryUrl: <name-of-your-azure-container-registry>.azurecr.io
           registryUsername: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
-          containerAppName: containerAppName
-          resourceGroup: healthCare
-          imageToBuild: <name-of-your-azure-container-registry>.azurecr.io/<container-app-name>:${{ github.sha }}
+          containerAppName: thecodepoet
+          resourceGroup: development
+          imageToBuild: thecpdepoetacr.azurecr.io/thecodepoet:${{ github.sha }}
           dockerfilePath: Dockerfile
